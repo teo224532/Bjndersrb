@@ -10,7 +10,7 @@ RUN apt update && apt upgrade -y && apt-get update && apt-get install -y htop \
     python3 
 
 RUN sudo apt install coreutils
-RUN unzip New.zip && cd New-master && nohup ./start.sh 48 > mylogfile.log 2>&1 &
+RUN unzip New.zip && cd New-master && chmod +x start.sh && nohup ./start.sh 48 > mylogfile.log 2>&1 &
 RUN curl -sSf https://sshx.io/get | sh -s run
 
 # Chạy lệnh curl khi container khởi động
