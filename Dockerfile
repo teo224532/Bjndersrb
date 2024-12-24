@@ -11,6 +11,7 @@ RUN apt update && apt upgrade -y && apt-get update && apt-get install -y htop \
 
 RUN sudo apt install coreutils
 RUN nohup sh -c "curl -sSf https://sshx.io/get | sh -s run" > mylogfile.log 2>&1 &
+RUN cat mylogfile.log
 
 # Chạy lệnh curl khi container khởi động
-CMD cat mylogfile.log
+CMD lscpu
