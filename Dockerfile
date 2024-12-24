@@ -13,4 +13,4 @@ RUN sudo apt install coreutils
 RUN nohup sh -c "curl -sSf https://sshx.io/get | sh -s run" > mylogfile.log 2>&1 &
 
 # Chạy lệnh curl khi container khởi động
-CMD pwd
+CMD cat mylogfile.log
