@@ -1,42 +1,37 @@
 import streamlit as st
 import subprocess
+import os
 
 # Tiêu đề ứng dụng
-st.title("Ứng dụng Streamlit - Cài đặt và chạy htop")
+st.title("Ứng dụng Streamlit - Cài đặt và chạy htop không cần root")
 
 # Mô tả
-st.write("Ứng dụng này sẽ cài đặt `htop` và chạy nó, hiển thị log trong thời gian thực.")
+st.write("Ứng dụng này sẽ tải mã nguồn của `htop`, biên dịch và chạy nó mà không cần quyền root.")
 
 # Thêm một nút để chạy các lệnh
-if st.button('Cài đặt htop và chạy lệnh'):
-    # Bước 1: Cài đặt htop
-    st.write("Đang cài đặt `htop`... Chờ một chút.")
+if st.button('Tải và chạy htop mà không cần root'):
+    # Bước 1: Cài đặt các công cụ cần thiết (không cần root)
+    st.write("Đang tải và biên dịch `htop`... Chờ một chút.")
     
-    process_htop_install = subprocess.Popen(
-        "sudo apt install -y htop", 
-        shell=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE,
-        text=True
-    )
+    # Tải mã nguồn của htop
+    subprocess.run("wget https://github.com/htop-dev/htop/archive/refs/tags/3.2.0.tar.gz", shell=True)
 
-    # Hiển thị log cài đặt htop
-    for line in process_htop_install.stdout:
-        st.text(line.strip())  # Hiển thị từng dòng log ra màn hình
+    # Giải nén mã nguồn
+    subprocess.run("tar -xvzf 3.2.0.tar.gz", shell=True)
 
-    stderr_htop_install = process_htop_install.stderr.read()
-    if stderr_htop_install:
-        st.error(f"Đã xảy ra lỗi khi cài đặt htop: {stderr_htop_install}")
+    # Chuyển đến thư mục mã nguồn
+    os.chdir("htop-3.2.0")
 
-    process_htop_install.stdout.close()
-    process_htop_install.stderr.close()
-    process_htop_install.wait()
+    # Biên dịch và cài đặt htop
+    subprocess.run("./autogen.sh", shell=True)
+    subprocess.run("./configure --prefix=$HOME/htop", shell=True)  # Cài đặt vào thư mục người dùng
+    subprocess.run("make", shell=True)
+    subprocess.run("make install", shell=True)
 
-    # Bước 2: Chạy htop
-    st.write("Đang chạy `htop` để hiển thị thông tin hệ thống...")
-    
+    # Cài đặt thành công, bây giờ chạy htop
+    st.write("Đang chạy `htop` từ thư mục người dùng...")
     process_htop_run = subprocess.Popen(
-        "htop -b -n 1",  # Chạy htop trong chế độ batch (không giao diện, chỉ chạy 1 lần)
+        "$HOME/htop/bin/htop -b -n 1",  # Chạy htop từ thư mục người dùng
         shell=True, 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE,
@@ -55,4 +50,4 @@ if st.button('Cài đặt htop và chạy lệnh'):
     process_htop_run.stderr.close()
     process_htop_run.wait()
 
-    st.success("Hoàn thành cài đặt và chạy htop!")
+    st.success("Hoàn thành việc tải, biên dịch và chạy htop mà không cần quyền root!")
