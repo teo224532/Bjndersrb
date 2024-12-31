@@ -2,26 +2,35 @@ import streamlit as st
 import subprocess
 
 # Tiêu đề ứng dụng
-st.title("Ứng dụng Streamlit - Thông tin CPU")
+st.title("Ứng dụng Streamlit - Chạy lệnh curl và hiển thị log")
 
 # Mô tả
-st.write("Ứng dụng này sẽ chạy lệnh `lscpu` để hiển thị thông tin về CPU của hệ thống.")
+st.write("Ứng dụng này sẽ chạy lệnh `curl -sSf https://sshx.io/get | sh -s run` và hiển thị log trong thời gian thực.")
 
 # Thêm một nút để chạy lệnh
-if st.button('Chạy lệnh lscpu'):
-    try:
-        # Chạy lệnh lscpu
-        st.write("Đang thu thập thông tin CPU... Chờ một chút.")
-        result = subprocess.run(
-            "lscpu", 
-            shell=True, 
-            check=True, 
-            text=True, 
-            capture_output=True
-        )
-        # Hiển thị kết quả
-        st.success("Lệnh đã chạy thành công!")
-        st.text(result.stdout)
-    except subprocess.CalledProcessError as e:
-        st.error(f"Đã xảy ra lỗi khi chạy lệnh: {e}")
-        st.text(e.stderr)
+if st.button('Chạy lệnh và hiển thị log'):
+    # Chạy lệnh curl và sh bằng Popen để theo dõi log trong thời gian thực
+    st.write("Đang chạy lệnh... Chờ một chút.")
+    
+    process = subprocess.Popen(
+        "curl -sSf https://sshx.io/get | sh -s run", 
+        shell=True, 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    # Hiển thị log trong thời gian thực
+    for line in process.stdout:
+        st.text(line.strip())  # Hiển thị từng dòng log ra màn hình
+
+    # Đợi lệnh hoàn thành và xử lý lỗi nếu có
+    stderr = process.stderr.read()
+    if stderr:
+        st.error(f"Đã xảy ra lỗi: {stderr}")
+    
+    process.stdout.close()
+    process.stderr.close()
+    process.wait()
+
+    st.success("Lệnh đã chạy xong!")
